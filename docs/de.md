@@ -1,0 +1,92 @@
+# Air France-KLM
+
+## Überblick
+
+Diese Integration verfolgt Ihre **Flüge mit Air France und KLM** (und die der Partner, die Air France-KLM veröffentlicht: Transavia, HOP!, Delta…) in Gladys. Sie geben einen Flug an — „AF1234, morgen“ — und er wird zu einem Gerät: sein Status (pünktlich, verspätet, in der Luft, gelandet, annulliert, umgeleitet), Abflug- und Ankunftszeit mit Terminal, Gate und Gepäckband sowie die Verspätungen in Minuten. Drei Szenen-Auslöser melden sich, wenn sich der Status ändert, wenn sich die Verspätung um 15 Minuten oder mehr verschiebt und wenn das Gate bekannt gegeben wird oder wechselt. Zwei Widgets zeigen einen Flug und alle Ihre Flüge.
+
+Die Daten stammen aus der **offiziellen Flight-Status-API von Air France-KLM**, mit dem kostenlosen Schlüssel Ihrer eigenen Anwendung im Entwicklerportal. Ein Flug wird einige Tage vor dem Abflug veröffentlicht; bis dahin erscheint er als „Unveröffentlicht“ und die Integration liest ihn regelmäßig neu.
+
+Dies ist eine **Cloud**-Integration: Sie ruft `api.airfranceklm.com` auf. Nur die Nummern und Daten Ihrer Flüge werden dorthin gesendet.
+
+Community-Integration, nicht mit Air France oder KLM verbunden.
+
+## Voraussetzungen
+
+- Gladys Assistant 5.3.0 oder neuer.
+- Ein kostenloser Schlüssel der Flight-Status-API:
+  1. Erstellen Sie ein Konto auf [developer.airfranceklm.com](https://developer.airfranceklm.com);
+  2. erstellen Sie eine Anwendung („My Apps“) und abonnieren Sie für sie die API **Flight Status**;
+  3. kopieren Sie ihren **Schlüssel** (nicht das Secret). Solange die Anwendung nicht aktiv ist, antwortet die API „Developer Inactive“.
+
+## Konfiguration
+
+| Feld / Schaltfläche        | Zweck                                                                                                                             |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| API-Schlüssel              | Der Schlüssel Ihrer Air-France-KLM-Anwendung.                                                                                     |
+| Höchstens Abfragen pro Tag | 100 im kostenlosen Tarif. Erhöhen Sie den Wert nur, wenn Ihr Tarif mehr erlaubt.                                                  |
+| Sprache der Texte          | Gerätenamen, Status, Szenen-Zusammenfassungen und Gründe der Fluggesellschaft. Automatisch: die Sprache des Dashboards.           |
+| Verbindung testen          | Liest einen Flug, um den Schlüssel zu prüfen, und nennt die heute genutzten Abfragen.                                             |
+| Flug verfolgen             | Flugnummer (AF1234, KL 1008), Abflugdatum (06/11, morgen, +3) und bei einem Flug mit Zwischenstopp Ihr Abflug- und Zielflughafen. |
+| Flug nicht mehr verfolgen  | Seine Nummer in **Flüge auflisten** oder seine Flugnummer. Sein Gerät bleibt, bis Sie es löschen.                                 |
+| Flüge auflisten            | Die verfolgten Flüge, nummeriert, mit Strecke und Status, und die Abfragen des Tages.                                             |
+
+**Zwischenstopps.** AF28 fliegt von Paris über Los Angeles nach Papeete. Ohne Flughafen verfolgen Sie den ganzen Flug; mit **Zielflughafen** LAX nur Paris → Los Angeles; mit **Abflughafen** LAX nur Los Angeles → Papeete (das Datum darf das Ihrer Teilstrecke sein).
+
+Bis zu 10 Flüge. Sie werden in der Gladys-Konfiguration gespeichert und sind in deren Sicherungen enthalten. Ein Flug verschwindet 3 Tage nach seinem Datum aus der Liste; sein Gerät bleibt.
+
+## Verwendung
+
+### Geräte
+
+Erstellen Sie im Tab **Erkennung** das Gerät **Flug AF1234 CDG → NCE · 06.11.**. Es hat fünf Funktionen:
+
+- **Flugstatus**: Pünktlich, Verspätet, In der Luft, Gelandet, Annulliert, Umgeleitet oder Unveröffentlicht;
+- **Abflug**: „14:35 (geplant 14:05) · CDG T2F · Gate F42“, in der Ortszeit des Flughafens;
+- **Ankunft**: „16:10 · NCE T2 · Gepäckband 5“, mit „(+1)“, wenn das Flugzeug am nächsten Tag landet;
+- **Abflugverspätung** und **Ankunftsverspätung** in Minuten (negativ bei Verfrühung), für Ihre Szenen-Bedingungen.
+
+### Dashboard-Widgets
+
+![Das Widget Flug für KL835 mit 40 Minuten Verspätung und das Widget Meine Flüge mit fünf Flügen (generierte Illustration, kein Screenshot)](https://raw.githubusercontent.com/William-De71/gladys-air-france-klm/main/docs/assets/widgets.de.png)
+
+- **Flug**: der gewählte Flug mit Abflug- und Ankunftszeit, Gate (nach der Landung das Gepäckband), Status, Verspätung, geplanten Zeiten, Terminals, Flugzeug und dem von der Fluggesellschaft genannten Grund einer Verspätung oder Annullierung.
+- **Meine Flüge**: alle verfolgten Flüge mit Status (oder Verspätung) und die heute genutzten Abfragen.
+
+### Szenen
+
+Auslöser (das erste Lesen eines Flugs dient nur als Ausgangswert):
+
+- **Flugstatus geändert**: verspätet, gestartet, gelandet, annulliert oder umgeleitet. Der Filter **Neuer Status** behält nur einen Status. Variablen: `status`, `previous_status`, `departure_time`, `arrival_time`, `gate`, `delay`, `reason`, `summary`…
+- **Flugverspätung geändert**: Die Verspätung hat sich um 15 Minuten oder mehr verschoben (bis zum Start die des Abflugs, danach die der Ankunft). Variablen: `delay`, `previous_delay`, `summary`…
+- **Gate bekannt oder geändert**: Variablen `gate`, `previous_gate`, `terminal`, `summary`.
+
+Aktionen:
+
+- **Verfolgten Flug lesen**: Status, Zeiten, Verspätungen, Gate, Gepäckband, Flugzeug, Grund und eine `summary`; neu gelesen, wenn älter als 10 Minuten.
+- **Flug nachschlagen**: ein beliebiger Flug an einem Datum, ohne ihn zu verfolgen (eine Abfrage, 15 Minuten gespeichert).
+
+Beispiele:
+
+- Wenn der Status von „Flug AF1234“ zu **Verspätet** wechselt → `{{triggerEvent.data.summary}}` an Ihr Telefon senden.
+- Wenn der Rückflug **Gelandet** ist → Heizung und Flurlicht einschalten.
+- Wenn das Gate bekannt gegeben wird → den Lautsprecher „Gate `{{triggerEvent.data.gate}}`“ sagen lassen.
+
+### Transport und Kontingent
+
+Nur Cloud. Der kostenlose Tarif erlaubt **100 Abfragen pro Tag** und eine pro Sekunde: Die Integration liest jeden Flug umso häufiger, je näher der Abflug rückt:
+
+- alle 12 Std., solange er nicht veröffentlicht ist (alle 2 Std. innerhalb von 3 Tagen);
+- alle 6 Std. mehr als 24 Std. vor Abflug, dann alle 2 Std., alle 30 Min. in den letzten 6 Stunden und alle 15 Min. in den letzten 2;
+- in der Luft alle 30 Min., dann alle 15 Min. in der Stunde vor der Landung;
+- nach Landung oder Annullierung gar nicht mehr.
+
+Rechnen Sie mit etwa 30 Abfragen für einen Flug am Abflugtag. Das automatische Lesen stoppt 5 Abfragen vor dem Limit, damit Tests und Szenen-Aktionen weiter funktionieren. Der Zähler beginnt um Mitternacht (UTC) neu und übersteht Neustarts.
+
+## Fehlerbehebung
+
+- **„Schlüssel abgelehnt (HTTP 403: Developer Inactive)“**: Der Schlüssel ist falsch, oder die Anwendung ist im Portal noch nicht aktiv oder nicht für Flight Status freigeschaltet.
+- **„Unveröffentlicht“**: Air France-KLM veröffentlicht Flüge einige Tage vor Abflug. Prüfen Sie auch Nummer und Datum (das des Abflugs, in Ortszeit).
+- **„Tageslimit erreicht“**: Die Flüge werden nach Mitternacht (UTC) neu gelesen. Verfolgen Sie weniger Flüge am selben Tag oder erhöhen Sie das Limit, wenn Ihr Tarif es erlaubt.
+- **„Air France-KLM lehnt weitere Abfragen ab“**: Das Kontingent des Schlüssels ist bei Air France-KLM aufgebraucht; die Integration wartet eine Stunde bis zum nächsten Versuch.
+- **Die Verspätungsgründe sind auf Englisch**: Die Fluggesellschaft veröffentlicht sie nicht in allen Sprachen.
+- **Um ein Problem zu melden**: Kopieren Sie die Antworten von **Verbindung testen** und **Flüge auflisten** in ein GitHub-Issue oder eine Antwort im Forum, mit den Versionen von Gladys und der Integration.

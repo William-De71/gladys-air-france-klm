@@ -1,0 +1,17 @@
+Gladys Air France-KLM integration
+Copyright 2026 William Deren
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+The flight statuses come from the Flight Status API of Air France-KLM (Open
+Data, https://developer.airfranceklm.com), read with the key of each user's
+own application, under the terms of use of the developer portal. The widgets
+say that the data comes from Air France-KLM. The file
+test/fixtures/flightstatus.json is a reduced extract of an answer of this API
+for 18 May 2025, used by the tests only.
+
+Air France, KLM and their logos are trademarks of Air France and KLM Royal
+Dutch Airlines. The logos in the cover image (docs/assets/cover.svg,
+cover.jpg) come from Wikimedia Commons, where they are marked public domain
+(text logos) and trademarked. This community integration is not affiliated
+with, endorsed or sponsored by Air France, KLM or the Air France-KLM group.

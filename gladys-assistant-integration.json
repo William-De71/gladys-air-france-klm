@@ -1,0 +1,1326 @@
+{
+  "manifest_version": 1,
+  "type": "device",
+  "name": "Air France-KLM",
+  "description": {
+    "en": "Follow your Air France and KLM flights: status, delays, gate, baggage belt, scenes.",
+    "fr": "Suivez vos vols Air France et KLM : statut, retards, porte, tapis bagages, scènes.",
+    "de": "Ihre Air-France- und KLM-Flüge: Status, Verspätungen, Gate, Gepäckband, Szenen.",
+    "es": "Siga sus vuelos de Air France y KLM: estado, retrasos, puerta, cinta, escenas."
+  },
+  "version": "0.1.0",
+  "docker_image": "ghcr.io/william-de71/gladys-air-france-klm:0.1.0",
+  "gladys_version": ">=5.3.0",
+  "categories": ["transport", "leisure"],
+  "keywords": [
+    "air france",
+    "klm",
+    "vol",
+    "flight",
+    "aéroport",
+    "retard",
+    "transavia",
+    "hop",
+    "skyteam",
+    "flight status"
+  ],
+  "cover_image": "https://raw.githubusercontent.com/William-De71/gladys-air-france-klm/main/cover.jpg",
+  "transports": ["cloud"],
+  "config_schema": [
+    {
+      "key": "intro",
+      "type": "section",
+      "label": {
+        "en": "Air France-KLM developer key",
+        "fr": "Clé développeur Air France-KLM",
+        "de": "Air-France-KLM-Entwicklerschlüssel",
+        "es": "Clave de desarrollador de Air France-KLM"
+      },
+      "description": {
+        "en": "This integration reads the official Flight Status API of Air France-KLM with your own free key.\n\n1. Create an account on developer.airfranceklm.com, then an application subscribed to the Flight Status API.\n2. Paste its key below and save.\n3. Press \"Follow a flight\" (AF1234, tomorrow), then add its device in the Discovery tab.\n\nThe free key allows 100 calls a day: the integration reads each flight more often as its departure gets closer (about 30 calls for a flight on its day).",
+        "fr": "Cette intégration lit l’API officielle Flight Status d’Air France-KLM avec votre propre clé gratuite.\n\n1. Créez un compte sur developer.airfranceklm.com, puis une application abonnée à l’API Flight Status.\n2. Collez sa clé ci-dessous et enregistrez.\n3. Appuyez sur « Suivre un vol » (AF1234, demain), puis ajoutez son appareil dans l’onglet Découverte.\n\nLa clé gratuite permet 100 requêtes par jour : l’intégration lit chaque vol plus souvent à l’approche du départ (environ 30 requêtes pour un vol le jour J).",
+        "de": "Diese Integration liest die offizielle Flight-Status-API von Air France-KLM mit Ihrem eigenen kostenlosen Schlüssel.\n\n1. Erstellen Sie ein Konto auf developer.airfranceklm.com und eine Anwendung mit Abonnement der Flight-Status-API.\n2. Fügen Sie ihren Schlüssel unten ein und speichern Sie.\n3. Drücken Sie „Flug verfolgen“ (AF1234, morgen) und fügen Sie dann sein Gerät im Tab Erkennung hinzu.\n\nDer kostenlose Schlüssel erlaubt 100 Abfragen pro Tag: Die Integration liest jeden Flug häufiger, je näher der Abflug rückt (etwa 30 Abfragen für einen Flug am Abflugtag).",
+        "es": "Esta integración lee la API oficial Flight Status de Air France-KLM con su propia clave gratuita.\n\n1. Cree una cuenta en developer.airfranceklm.com y una aplicación suscrita a la API Flight Status.\n2. Pegue su clave abajo y guarde.\n3. Pulse «Seguir un vuelo» (AF1234, mañana) y añada su dispositivo en la pestaña Descubrimiento.\n\nLa clave gratuita permite 100 consultas al día: la integración lee cada vuelo con más frecuencia a medida que se acerca la salida (unas 30 consultas para un vuelo el mismo día)."
+      }
+    },
+    {
+      "key": "api_key",
+      "type": "secret",
+      "required": true,
+      "label": {
+        "en": "API key",
+        "fr": "Clé d’API",
+        "de": "API-Schlüssel",
+        "es": "Clave de API"
+      },
+      "description": {
+        "en": "The key of your application on developer.airfranceklm.com (not the secret).",
+        "fr": "La clé de votre application sur developer.airfranceklm.com (pas le secret).",
+        "de": "Der Schlüssel Ihrer Anwendung auf developer.airfranceklm.com (nicht das Secret).",
+        "es": "La clave de su aplicación en developer.airfranceklm.com (no el secreto)."
+      }
+    },
+    {
+      "key": "daily_limit",
+      "type": "number",
+      "min": 10,
+      "max": 100000,
+      "default": 100,
+      "label": {
+        "en": "Calls a day at most",
+        "fr": "Requêtes par jour au maximum",
+        "de": "Höchstens Abfragen pro Tag",
+        "es": "Consultas al día como máximo"
+      },
+      "description": {
+        "en": "100 on the free plan. Raise it only if your plan allows more.",
+        "fr": "100 avec l’offre gratuite. Ne l’augmentez que si votre offre le permet.",
+        "de": "100 im kostenlosen Tarif. Erhöhen Sie den Wert nur, wenn Ihr Tarif mehr erlaubt.",
+        "es": "100 en el plan gratuito. Auméntelo solo si su plan lo permite."
+      }
+    },
+    {
+      "key": "language",
+      "type": "select",
+      "default": "auto",
+      "label": {
+        "en": "Language of the texts",
+        "fr": "Langue des textes",
+        "de": "Sprache der Texte",
+        "es": "Idioma de los textos"
+      },
+      "description": {
+        "en": "Device names, statuses, scene summaries and the reasons given by the airline. Automatic: the language of the dashboard.",
+        "fr": "Noms des appareils, statuts, résumés des scènes et motifs donnés par la compagnie. Automatique : la langue du tableau de bord.",
+        "de": "Gerätenamen, Status, Szenen-Zusammenfassungen und Gründe der Fluggesellschaft. Automatisch: die Sprache des Dashboards.",
+        "es": "Nombres de los dispositivos, estados, resúmenes de escenas y motivos de la aerolínea. Automático: el idioma del panel."
+      },
+      "options": [
+        {
+          "value": "auto",
+          "label": {
+            "en": "Automatic",
+            "fr": "Automatique",
+            "de": "Automatisch",
+            "es": "Automático"
+          }
+        },
+        {
+          "value": "en",
+          "label": {
+            "en": "English",
+            "fr": "English",
+            "de": "English",
+            "es": "English"
+          }
+        },
+        {
+          "value": "fr",
+          "label": {
+            "en": "Français",
+            "fr": "Français",
+            "de": "Français",
+            "es": "Français"
+          }
+        },
+        {
+          "value": "de",
+          "label": {
+            "en": "Deutsch",
+            "fr": "Deutsch",
+            "de": "Deutsch",
+            "es": "Deutsch"
+          }
+        },
+        {
+          "value": "es",
+          "label": {
+            "en": "Español",
+            "fr": "Español",
+            "de": "Español",
+            "es": "Español"
+          }
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "key": "test_connection",
+      "label": {
+        "en": "Test the connection",
+        "fr": "Tester la connexion",
+        "de": "Verbindung testen",
+        "es": "Probar la conexión"
+      },
+      "timeout_seconds": 60
+    },
+    {
+      "key": "add_flight",
+      "label": {
+        "en": "Follow a flight",
+        "fr": "Suivre un vol",
+        "de": "Flug verfolgen",
+        "es": "Seguir un vuelo"
+      },
+      "timeout_seconds": 60,
+      "fields": [
+        {
+          "key": "flight",
+          "type": "string",
+          "required": true,
+          "label": {
+            "en": "Flight number",
+            "fr": "Numéro de vol",
+            "de": "Flugnummer",
+            "es": "Número de vuelo"
+          },
+          "placeholder": {
+            "en": "AF1234",
+            "fr": "AF1234",
+            "de": "AF1234",
+            "es": "AF1234"
+          },
+          "description": {
+            "en": "The airline code and the number, as on the boarding pass: AF1234, KL 1008.",
+            "fr": "Le code de la compagnie et le numéro, comme sur la carte d’embarquement : AF1234, KL 1008.",
+            "de": "Airline-Code und Nummer, wie auf der Bordkarte: AF1234, KL 1008.",
+            "es": "El código de la aerolínea y el número, como en la tarjeta de embarque: AF1234, KL 1008."
+          }
+        },
+        {
+          "key": "date",
+          "type": "string",
+          "required": true,
+          "label": {
+            "en": "Date",
+            "fr": "Date",
+            "de": "Datum",
+            "es": "Fecha"
+          },
+          "placeholder": {
+            "en": "tomorrow",
+            "fr": "demain",
+            "de": "morgen",
+            "es": "mañana"
+          },
+          "description": {
+            "en": "The departure date: 06/11, 2026-11-06, today, tomorrow or +3.",
+            "fr": "La date de départ : 06/11, 06/11/2026, aujourd’hui, demain ou +3.",
+            "de": "Das Abflugdatum: 06/11, 06.11.2026, heute, morgen oder +3.",
+            "es": "La fecha de salida: 06/11, 06/11/2026, hoy, mañana o +3."
+          }
+        },
+        {
+          "key": "origin",
+          "type": "string",
+          "label": {
+            "en": "Boarding airport (optional)",
+            "fr": "Aéroport d’embarquement (facultatif)",
+            "de": "Abflughafen (optional)",
+            "es": "Aeropuerto de embarque (opcional)"
+          },
+          "placeholder": {
+            "en": "CDG",
+            "fr": "CDG",
+            "de": "CDG",
+            "es": "CDG"
+          },
+          "description": {
+            "en": "For a flight with a stop: the 3-letter code of the airport you board at.",
+            "fr": "Pour un vol avec escale : le code à 3 lettres de l’aéroport où vous embarquez.",
+            "de": "Bei einem Flug mit Zwischenstopp: der 3-Buchstaben-Code Ihres Abflughafens.",
+            "es": "Para un vuelo con escala: el código de 3 letras del aeropuerto donde embarca."
+          }
+        },
+        {
+          "key": "destination",
+          "type": "string",
+          "label": {
+            "en": "Arrival airport (optional)",
+            "fr": "Aéroport d’arrivée (facultatif)",
+            "de": "Zielflughafen (optional)",
+            "es": "Aeropuerto de llegada (opcional)"
+          },
+          "placeholder": {
+            "en": "LAX",
+            "fr": "LAX",
+            "de": "LAX",
+            "es": "LAX"
+          },
+          "description": {
+            "en": "For a flight with a stop: the 3-letter code of the airport you leave the plane at.",
+            "fr": "Pour un vol avec escale : le code à 3 lettres de l’aéroport où vous descendez.",
+            "de": "Bei einem Flug mit Zwischenstopp: der 3-Buchstaben-Code Ihres Zielflughafens.",
+            "es": "Para un vuelo con escala: el código de 3 letras del aeropuerto donde baja."
+          }
+        }
+      ]
+    },
+    {
+      "key": "remove_flight",
+      "label": {
+        "en": "Stop following a flight",
+        "fr": "Ne plus suivre un vol",
+        "de": "Flug nicht mehr verfolgen",
+        "es": "Dejar de seguir un vuelo"
+      },
+      "timeout_seconds": 30,
+      "fields": [
+        {
+          "key": "flight",
+          "type": "string",
+          "required": true,
+          "label": {
+            "en": "Flight",
+            "fr": "Vol",
+            "de": "Flug",
+            "es": "Vuelo"
+          },
+          "placeholder": {
+            "en": "2, or AF1234",
+            "fr": "2, ou AF1234",
+            "de": "2 oder AF1234",
+            "es": "2, o AF1234"
+          },
+          "description": {
+            "en": "Its number in \"List the flights\", or its flight number.",
+            "fr": "Son numéro dans « Lister les vols », ou son numéro de vol.",
+            "de": "Seine Nummer in „Flüge auflisten“ oder seine Flugnummer.",
+            "es": "Su número en «Listar los vuelos», o su número de vuelo."
+          }
+        }
+      ]
+    },
+    {
+      "key": "list_flights",
+      "label": {
+        "en": "List the flights",
+        "fr": "Lister les vols",
+        "de": "Flüge auflisten",
+        "es": "Listar los vuelos"
+      },
+      "timeout_seconds": 30
+    }
+  ],
+  "scene_triggers": [
+    {
+      "key": "status_changed",
+      "label": {
+        "en": "Flight status changed",
+        "fr": "Statut du vol modifié",
+        "de": "Flugstatus geändert",
+        "es": "Estado del vuelo cambiado"
+      },
+      "description": {
+        "en": "A followed flight is delayed, took off, landed, is cancelled or diverted.",
+        "fr": "Un vol suivi est retardé, a décollé, a atterri, est annulé ou dérouté.",
+        "de": "Ein verfolgter Flug ist verspätet, gestartet, gelandet, annulliert oder umgeleitet.",
+        "es": "Un vuelo en seguimiento se retrasa, despega, aterriza, se cancela o se desvía."
+      },
+      "fields": [
+        {
+          "key": "flight",
+          "type": "select",
+          "source": "devices",
+          "required": false,
+          "label": {
+            "en": "Flight",
+            "fr": "Vol",
+            "de": "Flug",
+            "es": "Vuelo"
+          }
+        },
+        {
+          "key": "status",
+          "type": "select",
+          "required": false,
+          "label": {
+            "en": "New status",
+            "fr": "Nouveau statut",
+            "de": "Neuer Status",
+            "es": "Nuevo estado"
+          },
+          "options": [
+            {
+              "value": "on_time",
+              "label": {
+                "en": "On time",
+                "fr": "À l’heure",
+                "de": "Pünktlich",
+                "es": "A tiempo"
+              }
+            },
+            {
+              "value": "delayed",
+              "label": {
+                "en": "Delayed",
+                "fr": "Retardé",
+                "de": "Verspätet",
+                "es": "Retrasado"
+              }
+            },
+            {
+              "value": "departed",
+              "label": {
+                "en": "In flight (took off)",
+                "fr": "En vol (décollé)",
+                "de": "In der Luft (gestartet)",
+                "es": "En vuelo (despegó)"
+              }
+            },
+            {
+              "value": "arrived",
+              "label": {
+                "en": "Landed",
+                "fr": "Arrivé",
+                "de": "Gelandet",
+                "es": "Aterrizado"
+              }
+            },
+            {
+              "value": "cancelled",
+              "label": {
+                "en": "Cancelled",
+                "fr": "Annulé",
+                "de": "Annulliert",
+                "es": "Cancelado"
+              }
+            },
+            {
+              "value": "diverted",
+              "label": {
+                "en": "Diverted",
+                "fr": "Dérouté",
+                "de": "Umgeleitet",
+                "es": "Desviado"
+              }
+            }
+          ]
+        }
+      ],
+      "variables": [
+        {
+          "key": "flight_number",
+          "type": "string",
+          "label": {
+            "en": "Flight number",
+            "fr": "Numéro de vol",
+            "de": "Flugnummer",
+            "es": "Número de vuelo"
+          }
+        },
+        {
+          "key": "date",
+          "type": "string",
+          "label": {
+            "en": "Date (YYYY-MM-DD)",
+            "fr": "Date (AAAA-MM-JJ)",
+            "de": "Datum (JJJJ-MM-TT)",
+            "es": "Fecha (AAAA-MM-DD)"
+          }
+        },
+        {
+          "key": "route",
+          "type": "string",
+          "label": {
+            "en": "Route",
+            "fr": "Trajet",
+            "de": "Strecke",
+            "es": "Trayecto"
+          }
+        },
+        {
+          "key": "status",
+          "type": "string",
+          "label": {
+            "en": "Status (key)",
+            "fr": "Statut (clé)",
+            "de": "Status (Schlüssel)",
+            "es": "Estado (clave)"
+          }
+        },
+        {
+          "key": "status_text",
+          "type": "string",
+          "label": {
+            "en": "Status",
+            "fr": "Statut",
+            "de": "Status",
+            "es": "Estado"
+          }
+        },
+        {
+          "key": "departure_time",
+          "type": "string",
+          "label": {
+            "en": "Departure time",
+            "fr": "Heure de départ",
+            "de": "Abflugzeit",
+            "es": "Hora de salida"
+          }
+        },
+        {
+          "key": "arrival_time",
+          "type": "string",
+          "label": {
+            "en": "Arrival time",
+            "fr": "Heure d’arrivée",
+            "de": "Ankunftszeit",
+            "es": "Hora de llegada"
+          }
+        },
+        {
+          "key": "gate",
+          "type": "string",
+          "label": {
+            "en": "Gate",
+            "fr": "Porte",
+            "de": "Gate",
+            "es": "Puerta"
+          }
+        },
+        {
+          "key": "previous_status",
+          "type": "string",
+          "label": {
+            "en": "Previous status (key)",
+            "fr": "Statut précédent (clé)",
+            "de": "Vorheriger Status (Schlüssel)",
+            "es": "Estado anterior (clave)"
+          }
+        },
+        {
+          "key": "delay",
+          "type": "number",
+          "label": {
+            "en": "Delay (minutes)",
+            "fr": "Retard (minutes)",
+            "de": "Verspätung (Minuten)",
+            "es": "Retraso (minutos)"
+          }
+        },
+        {
+          "key": "reason",
+          "type": "string",
+          "label": {
+            "en": "Reason given by the airline",
+            "fr": "Motif donné par la compagnie",
+            "de": "Grund der Fluggesellschaft",
+            "es": "Motivo dado por la aerolínea"
+          }
+        },
+        {
+          "key": "summary",
+          "type": "string",
+          "label": {
+            "en": "Summary",
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
+          }
+        }
+      ]
+    },
+    {
+      "key": "delay_changed",
+      "label": {
+        "en": "Flight delay changed",
+        "fr": "Retard du vol modifié",
+        "de": "Flugverspätung geändert",
+        "es": "Retraso del vuelo cambiado"
+      },
+      "description": {
+        "en": "The delay of a followed flight moved by 15 minutes or more (departure until take-off, arrival after).",
+        "fr": "Le retard d’un vol suivi a bougé de 15 minutes ou plus (départ jusqu’au décollage, arrivée ensuite).",
+        "de": "Die Verspätung eines verfolgten Flugs hat sich um 15 Minuten oder mehr geändert (Abflug bis zum Start, danach Ankunft).",
+        "es": "El retraso de un vuelo en seguimiento cambió 15 minutos o más (salida hasta el despegue, llegada después)."
+      },
+      "fields": [
+        {
+          "key": "flight",
+          "type": "select",
+          "source": "devices",
+          "required": false,
+          "label": {
+            "en": "Flight",
+            "fr": "Vol",
+            "de": "Flug",
+            "es": "Vuelo"
+          }
+        }
+      ],
+      "variables": [
+        {
+          "key": "flight_number",
+          "type": "string",
+          "label": {
+            "en": "Flight number",
+            "fr": "Numéro de vol",
+            "de": "Flugnummer",
+            "es": "Número de vuelo"
+          }
+        },
+        {
+          "key": "date",
+          "type": "string",
+          "label": {
+            "en": "Date (YYYY-MM-DD)",
+            "fr": "Date (AAAA-MM-JJ)",
+            "de": "Datum (JJJJ-MM-TT)",
+            "es": "Fecha (AAAA-MM-DD)"
+          }
+        },
+        {
+          "key": "route",
+          "type": "string",
+          "label": {
+            "en": "Route",
+            "fr": "Trajet",
+            "de": "Strecke",
+            "es": "Trayecto"
+          }
+        },
+        {
+          "key": "status",
+          "type": "string",
+          "label": {
+            "en": "Status (key)",
+            "fr": "Statut (clé)",
+            "de": "Status (Schlüssel)",
+            "es": "Estado (clave)"
+          }
+        },
+        {
+          "key": "status_text",
+          "type": "string",
+          "label": {
+            "en": "Status",
+            "fr": "Statut",
+            "de": "Status",
+            "es": "Estado"
+          }
+        },
+        {
+          "key": "departure_time",
+          "type": "string",
+          "label": {
+            "en": "Departure time",
+            "fr": "Heure de départ",
+            "de": "Abflugzeit",
+            "es": "Hora de salida"
+          }
+        },
+        {
+          "key": "arrival_time",
+          "type": "string",
+          "label": {
+            "en": "Arrival time",
+            "fr": "Heure d’arrivée",
+            "de": "Ankunftszeit",
+            "es": "Hora de llegada"
+          }
+        },
+        {
+          "key": "gate",
+          "type": "string",
+          "label": {
+            "en": "Gate",
+            "fr": "Porte",
+            "de": "Gate",
+            "es": "Puerta"
+          }
+        },
+        {
+          "key": "delay",
+          "type": "number",
+          "label": {
+            "en": "Delay (minutes)",
+            "fr": "Retard (minutes)",
+            "de": "Verspätung (Minuten)",
+            "es": "Retraso (minutos)"
+          }
+        },
+        {
+          "key": "previous_delay",
+          "type": "number",
+          "label": {
+            "en": "Previous delay (minutes)",
+            "fr": "Retard précédent (minutes)",
+            "de": "Vorherige Verspätung (Minuten)",
+            "es": "Retraso anterior (minutos)"
+          }
+        },
+        {
+          "key": "reason",
+          "type": "string",
+          "label": {
+            "en": "Reason given by the airline",
+            "fr": "Motif donné par la compagnie",
+            "de": "Grund der Fluggesellschaft",
+            "es": "Motivo dado por la aerolínea"
+          }
+        },
+        {
+          "key": "summary",
+          "type": "string",
+          "label": {
+            "en": "Summary",
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
+          }
+        }
+      ]
+    },
+    {
+      "key": "gate_changed",
+      "label": {
+        "en": "Gate announced or changed",
+        "fr": "Porte annoncée ou changée",
+        "de": "Gate bekannt oder geändert",
+        "es": "Puerta anunciada o cambiada"
+      },
+      "description": {
+        "en": "The departure gate of a followed flight is announced, or changes.",
+        "fr": "La porte d’embarquement d’un vol suivi est annoncée, ou change.",
+        "de": "Das Abfluggate eines verfolgten Flugs wird bekannt gegeben oder ändert sich.",
+        "es": "La puerta de embarque de un vuelo en seguimiento se anuncia o cambia."
+      },
+      "fields": [
+        {
+          "key": "flight",
+          "type": "select",
+          "source": "devices",
+          "required": false,
+          "label": {
+            "en": "Flight",
+            "fr": "Vol",
+            "de": "Flug",
+            "es": "Vuelo"
+          }
+        }
+      ],
+      "variables": [
+        {
+          "key": "flight_number",
+          "type": "string",
+          "label": {
+            "en": "Flight number",
+            "fr": "Numéro de vol",
+            "de": "Flugnummer",
+            "es": "Número de vuelo"
+          }
+        },
+        {
+          "key": "date",
+          "type": "string",
+          "label": {
+            "en": "Date (YYYY-MM-DD)",
+            "fr": "Date (AAAA-MM-JJ)",
+            "de": "Datum (JJJJ-MM-TT)",
+            "es": "Fecha (AAAA-MM-DD)"
+          }
+        },
+        {
+          "key": "route",
+          "type": "string",
+          "label": {
+            "en": "Route",
+            "fr": "Trajet",
+            "de": "Strecke",
+            "es": "Trayecto"
+          }
+        },
+        {
+          "key": "status",
+          "type": "string",
+          "label": {
+            "en": "Status (key)",
+            "fr": "Statut (clé)",
+            "de": "Status (Schlüssel)",
+            "es": "Estado (clave)"
+          }
+        },
+        {
+          "key": "status_text",
+          "type": "string",
+          "label": {
+            "en": "Status",
+            "fr": "Statut",
+            "de": "Status",
+            "es": "Estado"
+          }
+        },
+        {
+          "key": "departure_time",
+          "type": "string",
+          "label": {
+            "en": "Departure time",
+            "fr": "Heure de départ",
+            "de": "Abflugzeit",
+            "es": "Hora de salida"
+          }
+        },
+        {
+          "key": "arrival_time",
+          "type": "string",
+          "label": {
+            "en": "Arrival time",
+            "fr": "Heure d’arrivée",
+            "de": "Ankunftszeit",
+            "es": "Hora de llegada"
+          }
+        },
+        {
+          "key": "gate",
+          "type": "string",
+          "label": {
+            "en": "Gate",
+            "fr": "Porte",
+            "de": "Gate",
+            "es": "Puerta"
+          }
+        },
+        {
+          "key": "previous_gate",
+          "type": "string",
+          "label": {
+            "en": "Previous gate",
+            "fr": "Porte précédente",
+            "de": "Vorheriges Gate",
+            "es": "Puerta anterior"
+          }
+        },
+        {
+          "key": "terminal",
+          "type": "string",
+          "label": {
+            "en": "Terminal",
+            "fr": "Terminal",
+            "de": "Terminal",
+            "es": "Terminal"
+          }
+        },
+        {
+          "key": "summary",
+          "type": "string",
+          "label": {
+            "en": "Summary",
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
+          }
+        }
+      ]
+    }
+  ],
+  "scene_actions": [
+    {
+      "key": "get_flight",
+      "label": {
+        "en": "Read a followed flight",
+        "fr": "Lire un vol suivi",
+        "de": "Verfolgten Flug lesen",
+        "es": "Leer un vuelo en seguimiento"
+      },
+      "description": {
+        "en": "The status, times, gate and delays of a followed flight (read again when older than 10 minutes).",
+        "fr": "Le statut, les horaires, la porte et les retards d’un vol suivi (relu s’il date de plus de 10 minutes).",
+        "de": "Status, Zeiten, Gate und Verspätungen eines verfolgten Flugs (neu gelesen, wenn älter als 10 Minuten).",
+        "es": "El estado, horarios, puerta y retrasos de un vuelo en seguimiento (se vuelve a leer si tiene más de 10 minutos)."
+      },
+      "timeout_seconds": 60,
+      "fields": [
+        {
+          "key": "flight",
+          "type": "select",
+          "source": "devices",
+          "required": true,
+          "label": {
+            "en": "Flight",
+            "fr": "Vol",
+            "de": "Flug",
+            "es": "Vuelo"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "key": "found",
+          "type": "boolean",
+          "label": {
+            "en": "Flight found",
+            "fr": "Vol trouvé",
+            "de": "Flug gefunden",
+            "es": "Vuelo encontrado"
+          }
+        },
+        {
+          "key": "status",
+          "type": "string",
+          "label": {
+            "en": "Status (key)",
+            "fr": "Statut (clé)",
+            "de": "Status (Schlüssel)",
+            "es": "Estado (clave)"
+          }
+        },
+        {
+          "key": "status_text",
+          "type": "string",
+          "label": {
+            "en": "Status",
+            "fr": "Statut",
+            "de": "Status",
+            "es": "Estado"
+          }
+        },
+        {
+          "key": "route",
+          "type": "string",
+          "label": {
+            "en": "Route",
+            "fr": "Trajet",
+            "de": "Strecke",
+            "es": "Trayecto"
+          }
+        },
+        {
+          "key": "departure_airport",
+          "type": "string",
+          "label": {
+            "en": "Departure airport",
+            "fr": "Aéroport de départ",
+            "de": "Abflughafen",
+            "es": "Aeropuerto de salida"
+          }
+        },
+        {
+          "key": "arrival_airport",
+          "type": "string",
+          "label": {
+            "en": "Arrival airport",
+            "fr": "Aéroport d’arrivée",
+            "de": "Zielflughafen",
+            "es": "Aeropuerto de llegada"
+          }
+        },
+        {
+          "key": "departure_time",
+          "type": "string",
+          "label": {
+            "en": "Departure time",
+            "fr": "Heure de départ",
+            "de": "Abflugzeit",
+            "es": "Hora de salida"
+          }
+        },
+        {
+          "key": "departure_scheduled",
+          "type": "string",
+          "label": {
+            "en": "Scheduled departure",
+            "fr": "Départ prévu",
+            "de": "Geplanter Abflug",
+            "es": "Salida prevista"
+          }
+        },
+        {
+          "key": "departure_delay",
+          "type": "number",
+          "label": {
+            "en": "Departure delay (minutes)",
+            "fr": "Retard au départ (minutes)",
+            "de": "Abflugverspätung (Minuten)",
+            "es": "Retraso en la salida (minutos)"
+          }
+        },
+        {
+          "key": "arrival_time",
+          "type": "string",
+          "label": {
+            "en": "Arrival time",
+            "fr": "Heure d’arrivée",
+            "de": "Ankunftszeit",
+            "es": "Hora de llegada"
+          }
+        },
+        {
+          "key": "arrival_scheduled",
+          "type": "string",
+          "label": {
+            "en": "Scheduled arrival",
+            "fr": "Arrivée prévue",
+            "de": "Geplante Ankunft",
+            "es": "Llegada prevista"
+          }
+        },
+        {
+          "key": "arrival_delay",
+          "type": "number",
+          "label": {
+            "en": "Arrival delay (minutes)",
+            "fr": "Retard à l’arrivée (minutes)",
+            "de": "Ankunftsverspätung (Minuten)",
+            "es": "Retraso en la llegada (minutos)"
+          }
+        },
+        {
+          "key": "terminal",
+          "type": "string",
+          "label": {
+            "en": "Departure terminal",
+            "fr": "Terminal de départ",
+            "de": "Abflugterminal",
+            "es": "Terminal de salida"
+          }
+        },
+        {
+          "key": "gate",
+          "type": "string",
+          "label": {
+            "en": "Gate",
+            "fr": "Porte",
+            "de": "Gate",
+            "es": "Puerta"
+          }
+        },
+        {
+          "key": "baggage_belt",
+          "type": "string",
+          "label": {
+            "en": "Baggage belt",
+            "fr": "Tapis à bagages",
+            "de": "Gepäckband",
+            "es": "Cinta de equipaje"
+          }
+        },
+        {
+          "key": "aircraft",
+          "type": "string",
+          "label": {
+            "en": "Aircraft",
+            "fr": "Avion",
+            "de": "Flugzeug",
+            "es": "Avión"
+          }
+        },
+        {
+          "key": "reason",
+          "type": "string",
+          "label": {
+            "en": "Reason given by the airline",
+            "fr": "Motif donné par la compagnie",
+            "de": "Grund der Fluggesellschaft",
+            "es": "Motivo dado por la aerolínea"
+          }
+        },
+        {
+          "key": "summary",
+          "type": "string",
+          "label": {
+            "en": "Summary",
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
+          }
+        }
+      ]
+    },
+    {
+      "key": "look_up_flight",
+      "label": {
+        "en": "Look up a flight",
+        "fr": "Rechercher un vol",
+        "de": "Flug nachschlagen",
+        "es": "Consultar un vuelo"
+      },
+      "description": {
+        "en": "Any flight on a date, without following it (one call, kept 15 minutes).",
+        "fr": "N’importe quel vol à une date, sans le suivre (une requête, gardée 15 minutes).",
+        "de": "Ein beliebiger Flug an einem Datum, ohne ihn zu verfolgen (eine Abfrage, 15 Minuten gespeichert).",
+        "es": "Cualquier vuelo en una fecha, sin seguirlo (una consulta, guardada 15 minutos)."
+      },
+      "timeout_seconds": 60,
+      "fields": [
+        {
+          "key": "flight_number",
+          "type": "string",
+          "required": true,
+          "label": {
+            "en": "Flight number",
+            "fr": "Numéro de vol",
+            "de": "Flugnummer",
+            "es": "Número de vuelo"
+          },
+          "placeholder": {
+            "en": "AF1234",
+            "fr": "AF1234",
+            "de": "AF1234",
+            "es": "AF1234"
+          },
+          "description": {
+            "en": "The airline code and the number, as on the boarding pass: AF1234, KL 1008.",
+            "fr": "Le code de la compagnie et le numéro, comme sur la carte d’embarquement : AF1234, KL 1008.",
+            "de": "Airline-Code und Nummer, wie auf der Bordkarte: AF1234, KL 1008.",
+            "es": "El código de la aerolínea y el número, como en la tarjeta de embarque: AF1234, KL 1008."
+          }
+        },
+        {
+          "key": "date",
+          "type": "string",
+          "default": "today",
+          "label": {
+            "en": "Date",
+            "fr": "Date",
+            "de": "Datum",
+            "es": "Fecha"
+          },
+          "placeholder": {
+            "en": "today",
+            "fr": "aujourd’hui",
+            "de": "heute",
+            "es": "hoy"
+          },
+          "description": {
+            "en": "The departure date: 06/11, 2026-11-06, today, tomorrow or +3.",
+            "fr": "La date de départ : 06/11, 06/11/2026, aujourd’hui, demain ou +3.",
+            "de": "Das Abflugdatum: 06/11, 06.11.2026, heute, morgen oder +3.",
+            "es": "La fecha de salida: 06/11, 06/11/2026, hoy, mañana o +3."
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "key": "found",
+          "type": "boolean",
+          "label": {
+            "en": "Flight found",
+            "fr": "Vol trouvé",
+            "de": "Flug gefunden",
+            "es": "Vuelo encontrado"
+          }
+        },
+        {
+          "key": "status",
+          "type": "string",
+          "label": {
+            "en": "Status (key)",
+            "fr": "Statut (clé)",
+            "de": "Status (Schlüssel)",
+            "es": "Estado (clave)"
+          }
+        },
+        {
+          "key": "status_text",
+          "type": "string",
+          "label": {
+            "en": "Status",
+            "fr": "Statut",
+            "de": "Status",
+            "es": "Estado"
+          }
+        },
+        {
+          "key": "route",
+          "type": "string",
+          "label": {
+            "en": "Route",
+            "fr": "Trajet",
+            "de": "Strecke",
+            "es": "Trayecto"
+          }
+        },
+        {
+          "key": "departure_airport",
+          "type": "string",
+          "label": {
+            "en": "Departure airport",
+            "fr": "Aéroport de départ",
+            "de": "Abflughafen",
+            "es": "Aeropuerto de salida"
+          }
+        },
+        {
+          "key": "arrival_airport",
+          "type": "string",
+          "label": {
+            "en": "Arrival airport",
+            "fr": "Aéroport d’arrivée",
+            "de": "Zielflughafen",
+            "es": "Aeropuerto de llegada"
+          }
+        },
+        {
+          "key": "departure_time",
+          "type": "string",
+          "label": {
+            "en": "Departure time",
+            "fr": "Heure de départ",
+            "de": "Abflugzeit",
+            "es": "Hora de salida"
+          }
+        },
+        {
+          "key": "departure_scheduled",
+          "type": "string",
+          "label": {
+            "en": "Scheduled departure",
+            "fr": "Départ prévu",
+            "de": "Geplanter Abflug",
+            "es": "Salida prevista"
+          }
+        },
+        {
+          "key": "departure_delay",
+          "type": "number",
+          "label": {
+            "en": "Departure delay (minutes)",
+            "fr": "Retard au départ (minutes)",
+            "de": "Abflugverspätung (Minuten)",
+            "es": "Retraso en la salida (minutos)"
+          }
+        },
+        {
+          "key": "arrival_time",
+          "type": "string",
+          "label": {
+            "en": "Arrival time",
+            "fr": "Heure d’arrivée",
+            "de": "Ankunftszeit",
+            "es": "Hora de llegada"
+          }
+        },
+        {
+          "key": "arrival_scheduled",
+          "type": "string",
+          "label": {
+            "en": "Scheduled arrival",
+            "fr": "Arrivée prévue",
+            "de": "Geplante Ankunft",
+            "es": "Llegada prevista"
+          }
+        },
+        {
+          "key": "arrival_delay",
+          "type": "number",
+          "label": {
+            "en": "Arrival delay (minutes)",
+            "fr": "Retard à l’arrivée (minutes)",
+            "de": "Ankunftsverspätung (Minuten)",
+            "es": "Retraso en la llegada (minutos)"
+          }
+        },
+        {
+          "key": "terminal",
+          "type": "string",
+          "label": {
+            "en": "Departure terminal",
+            "fr": "Terminal de départ",
+            "de": "Abflugterminal",
+            "es": "Terminal de salida"
+          }
+        },
+        {
+          "key": "gate",
+          "type": "string",
+          "label": {
+            "en": "Gate",
+            "fr": "Porte",
+            "de": "Gate",
+            "es": "Puerta"
+          }
+        },
+        {
+          "key": "baggage_belt",
+          "type": "string",
+          "label": {
+            "en": "Baggage belt",
+            "fr": "Tapis à bagages",
+            "de": "Gepäckband",
+            "es": "Cinta de equipaje"
+          }
+        },
+        {
+          "key": "aircraft",
+          "type": "string",
+          "label": {
+            "en": "Aircraft",
+            "fr": "Avion",
+            "de": "Flugzeug",
+            "es": "Avión"
+          }
+        },
+        {
+          "key": "reason",
+          "type": "string",
+          "label": {
+            "en": "Reason given by the airline",
+            "fr": "Motif donné par la compagnie",
+            "de": "Grund der Fluggesellschaft",
+            "es": "Motivo dado por la aerolínea"
+          }
+        },
+        {
+          "key": "summary",
+          "type": "string",
+          "label": {
+            "en": "Summary",
+            "fr": "Résumé",
+            "de": "Zusammenfassung",
+            "es": "Resumen"
+          }
+        }
+      ]
+    }
+  ],
+  "widgets": [
+    {
+      "key": "flight",
+      "icon": "send",
+      "label": {
+        "en": "Flight",
+        "fr": "Vol",
+        "de": "Flug",
+        "es": "Vuelo"
+      },
+      "description": {
+        "en": "One followed flight: times, gate or baggage belt, status, delay, aircraft.",
+        "fr": "Un vol suivi : horaires, porte ou tapis bagages, statut, retard, avion.",
+        "de": "Ein verfolgter Flug: Zeiten, Gate oder Gepäckband, Status, Verspätung, Flugzeug.",
+        "es": "Un vuelo en seguimiento: horarios, puerta o cinta, estado, retraso, avión."
+      },
+      "settings": [
+        {
+          "key": "flight",
+          "type": "select",
+          "source": "devices",
+          "required": true,
+          "label": {
+            "en": "Flight",
+            "fr": "Vol",
+            "de": "Flug",
+            "es": "Vuelo"
+          }
+        }
+      ]
+    },
+    {
+      "key": "flights",
+      "icon": "list",
+      "label": {
+        "en": "My flights",
+        "fr": "Mes vols",
+        "de": "Meine Flüge",
+        "es": "Mis vuelos"
+      },
+      "description": {
+        "en": "Every followed flight with its status, and the calls used today.",
+        "fr": "Tous les vols suivis avec leur statut, et les requêtes du jour.",
+        "de": "Alle verfolgten Flüge mit Status und den heutigen Abfragen.",
+        "es": "Todos los vuelos en seguimiento con su estado y las consultas de hoy."
+      }
+    }
+  ]
+}

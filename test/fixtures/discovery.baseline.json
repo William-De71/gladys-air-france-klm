@@ -1,0 +1,432 @@
+{
+  "devices": {
+    "flight": {
+      "external_id": "ext:air-france-klm:flight:3f9a12c4",
+      "should_poll": false,
+      "params": ["AFKL_FLIGHT", "AFKL_DATE"],
+      "features": [
+        {
+          "external_id": "ext:air-france-klm:flight:3f9a12c4:status",
+          "category": "text",
+          "type": "text",
+          "min": 0,
+          "max": 0,
+          "read_only": true,
+          "has_feedback": false
+        },
+        {
+          "external_id": "ext:air-france-klm:flight:3f9a12c4:departure",
+          "category": "text",
+          "type": "text",
+          "min": 0,
+          "max": 0,
+          "read_only": true,
+          "has_feedback": false
+        },
+        {
+          "external_id": "ext:air-france-klm:flight:3f9a12c4:arrival",
+          "category": "text",
+          "type": "text",
+          "min": 0,
+          "max": 0,
+          "read_only": true,
+          "has_feedback": false
+        },
+        {
+          "external_id": "ext:air-france-klm:flight:3f9a12c4:departure_delay",
+          "category": "duration",
+          "type": "integer",
+          "unit": "minutes",
+          "min": -2880,
+          "max": 2880,
+          "read_only": true,
+          "has_feedback": false
+        },
+        {
+          "external_id": "ext:air-france-klm:flight:3f9a12c4:arrival_delay",
+          "category": "duration",
+          "type": "integer",
+          "unit": "minutes",
+          "min": -2880,
+          "max": 2880,
+          "read_only": true,
+          "has_feedback": false
+        }
+      ]
+    }
+  },
+  "internal_keys": {
+    "flights": "flights",
+    "language": "last_language"
+  },
+  "manifest": {
+    "actions": ["test_connection", "add_flight", "remove_flight", "list_flights"],
+    "config_schema": [
+      {
+        "key": "intro",
+        "type": "section"
+      },
+      {
+        "key": "api_key",
+        "type": "secret"
+      },
+      {
+        "key": "daily_limit",
+        "type": "number"
+      },
+      {
+        "key": "language",
+        "type": "select"
+      }
+    ],
+    "scene_triggers": [
+      {
+        "key": "status_changed",
+        "fields": [
+          {
+            "key": "flight",
+            "options": []
+          },
+          {
+            "key": "status",
+            "options": ["on_time", "delayed", "departed", "arrived", "cancelled", "diverted"]
+          }
+        ],
+        "variables": [
+          {
+            "key": "flight_number",
+            "type": "string"
+          },
+          {
+            "key": "date",
+            "type": "string"
+          },
+          {
+            "key": "route",
+            "type": "string"
+          },
+          {
+            "key": "status",
+            "type": "string"
+          },
+          {
+            "key": "status_text",
+            "type": "string"
+          },
+          {
+            "key": "departure_time",
+            "type": "string"
+          },
+          {
+            "key": "arrival_time",
+            "type": "string"
+          },
+          {
+            "key": "gate",
+            "type": "string"
+          },
+          {
+            "key": "previous_status",
+            "type": "string"
+          },
+          {
+            "key": "delay",
+            "type": "number"
+          },
+          {
+            "key": "reason",
+            "type": "string"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "key": "delay_changed",
+        "fields": [
+          {
+            "key": "flight",
+            "options": []
+          }
+        ],
+        "variables": [
+          {
+            "key": "flight_number",
+            "type": "string"
+          },
+          {
+            "key": "date",
+            "type": "string"
+          },
+          {
+            "key": "route",
+            "type": "string"
+          },
+          {
+            "key": "status",
+            "type": "string"
+          },
+          {
+            "key": "status_text",
+            "type": "string"
+          },
+          {
+            "key": "departure_time",
+            "type": "string"
+          },
+          {
+            "key": "arrival_time",
+            "type": "string"
+          },
+          {
+            "key": "gate",
+            "type": "string"
+          },
+          {
+            "key": "delay",
+            "type": "number"
+          },
+          {
+            "key": "previous_delay",
+            "type": "number"
+          },
+          {
+            "key": "reason",
+            "type": "string"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "key": "gate_changed",
+        "fields": [
+          {
+            "key": "flight",
+            "options": []
+          }
+        ],
+        "variables": [
+          {
+            "key": "flight_number",
+            "type": "string"
+          },
+          {
+            "key": "date",
+            "type": "string"
+          },
+          {
+            "key": "route",
+            "type": "string"
+          },
+          {
+            "key": "status",
+            "type": "string"
+          },
+          {
+            "key": "status_text",
+            "type": "string"
+          },
+          {
+            "key": "departure_time",
+            "type": "string"
+          },
+          {
+            "key": "arrival_time",
+            "type": "string"
+          },
+          {
+            "key": "gate",
+            "type": "string"
+          },
+          {
+            "key": "previous_gate",
+            "type": "string"
+          },
+          {
+            "key": "terminal",
+            "type": "string"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      }
+    ],
+    "scene_actions": [
+      {
+        "key": "get_flight",
+        "fields": ["flight"],
+        "outputs": [
+          {
+            "key": "found",
+            "type": "boolean"
+          },
+          {
+            "key": "status",
+            "type": "string"
+          },
+          {
+            "key": "status_text",
+            "type": "string"
+          },
+          {
+            "key": "route",
+            "type": "string"
+          },
+          {
+            "key": "departure_airport",
+            "type": "string"
+          },
+          {
+            "key": "arrival_airport",
+            "type": "string"
+          },
+          {
+            "key": "departure_time",
+            "type": "string"
+          },
+          {
+            "key": "departure_scheduled",
+            "type": "string"
+          },
+          {
+            "key": "departure_delay",
+            "type": "number"
+          },
+          {
+            "key": "arrival_time",
+            "type": "string"
+          },
+          {
+            "key": "arrival_scheduled",
+            "type": "string"
+          },
+          {
+            "key": "arrival_delay",
+            "type": "number"
+          },
+          {
+            "key": "terminal",
+            "type": "string"
+          },
+          {
+            "key": "gate",
+            "type": "string"
+          },
+          {
+            "key": "baggage_belt",
+            "type": "string"
+          },
+          {
+            "key": "aircraft",
+            "type": "string"
+          },
+          {
+            "key": "reason",
+            "type": "string"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "key": "look_up_flight",
+        "fields": ["flight_number", "date"],
+        "outputs": [
+          {
+            "key": "found",
+            "type": "boolean"
+          },
+          {
+            "key": "status",
+            "type": "string"
+          },
+          {
+            "key": "status_text",
+            "type": "string"
+          },
+          {
+            "key": "route",
+            "type": "string"
+          },
+          {
+            "key": "departure_airport",
+            "type": "string"
+          },
+          {
+            "key": "arrival_airport",
+            "type": "string"
+          },
+          {
+            "key": "departure_time",
+            "type": "string"
+          },
+          {
+            "key": "departure_scheduled",
+            "type": "string"
+          },
+          {
+            "key": "departure_delay",
+            "type": "number"
+          },
+          {
+            "key": "arrival_time",
+            "type": "string"
+          },
+          {
+            "key": "arrival_scheduled",
+            "type": "string"
+          },
+          {
+            "key": "arrival_delay",
+            "type": "number"
+          },
+          {
+            "key": "terminal",
+            "type": "string"
+          },
+          {
+            "key": "gate",
+            "type": "string"
+          },
+          {
+            "key": "baggage_belt",
+            "type": "string"
+          },
+          {
+            "key": "aircraft",
+            "type": "string"
+          },
+          {
+            "key": "reason",
+            "type": "string"
+          },
+          {
+            "key": "summary",
+            "type": "string"
+          }
+        ]
+      }
+    ],
+    "widgets": [
+      {
+        "key": "flight",
+        "settings": ["flight"],
+        "options": {}
+      },
+      {
+        "key": "flights",
+        "settings": [],
+        "options": {}
+      }
+    ]
+  }
+}
